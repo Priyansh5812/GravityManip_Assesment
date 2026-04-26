@@ -30,21 +30,24 @@ public class SpringArmComponent : MonoBehaviour
     void Initialize()
     { 
         mainCamera ??= Camera.main;
+        Cursor.lockState = CursorLockMode.Locked;   
     }
 
     void AddInput()
     {
-        
         xInput = Input.GetAxis("Mouse X");
         yInput = Input.GetAxis("Mouse Y");
-        Vector3 rotation = this.transform.rotation.eulerAngles;
+        Vector3 rotation = this.transform.localRotation.eulerAngles;
         float xStep = -yInput * XSens * globalSensMultiplier * Time.deltaTime;
         float yStep = xInput * YSens * globalSensMultiplier * Time.deltaTime;
         currentXRotation += xStep;
         currentXRotation = Mathf.Clamp(currentXRotation, -minMaxXAngle, minMaxXAngle);
-        float currentYRotation = transform.eulerAngles.y + yStep;
-        transform.rotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
+
+        float currentYRotation = transform.localEulerAngles.y + yStep;
+
+        transform.localRotation = Quaternion.Euler(currentXRotation, currentYRotation, 0f);
     }
+
 
     void ComputeRayParams()
     {
@@ -69,7 +72,7 @@ public class SpringArmComponent : MonoBehaviour
     }
 
     void ComputeRotation()
-    {
+    {   
         rotation = Quaternion.LookRotation(-rayDirection, this.transform.up);
         rotation *= Quaternion.Euler(EulerOffset);
     }
@@ -78,6 +81,13 @@ public class SpringArmComponent : MonoBehaviour
     {   
         mainCamera.transform.position = position;
         mainCamera.transform.rotation = rotation;
+    }
+
+    public (Vector3, Quaternion) GetComputedPose()
+    { 
+        ComputePosition();
+        ComputeRotation();
+        return (position, rotation);
     }
 
     private void Update()

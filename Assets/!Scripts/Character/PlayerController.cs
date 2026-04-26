@@ -33,12 +33,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float groundCheckCapsuleRadiusModifier = 1.0f;
     RaycastHit lastGroundCheckHit;
     RaycastHit[] groundCheckInfo = new RaycastHit[1];
+    private Collider groundCollider;
 
     [Header("Gravity")]
     [SerializeField] float maxGravity;
     [SerializeField] float gravityAccumulation;
     float currentGravity;
 
+    public bool isPossesed = true;
 
     void ValidateCapsuleBounds()
     { 
@@ -69,9 +71,9 @@ public class PlayerController : MonoBehaviour
 
     void ReceiveInput()
     {
-        motionVector.x = Input.GetAxisRaw("Horizontal");
-        motionVector.z = Input.GetAxisRaw("Vertical");
-        queueJump = isGrounded && Input.GetKeyDown(KeyCode.Space);
+        motionVector.x = isPossesed ? Input.GetAxisRaw("Horizontal") : 0;
+        motionVector.z = isPossesed ? Input.GetAxisRaw("Vertical") : 0;
+        queueJump = isPossesed ? (isGrounded && Input.GetKeyDown(KeyCode.Space)) : false;
         SetJumpState();
         motionVector.Normalize();
     }
@@ -100,7 +102,6 @@ public class PlayerController : MonoBehaviour
             groundCheckOffset + groundCheckRangeOffset,
             groundMask) > 0)
         {
-            lastGroundCheckHit = groundCheckInfo[0];
             isGrounded = true;
             remainingJumpSpeed = 0.0f;
         }
@@ -108,6 +109,8 @@ public class PlayerController : MonoBehaviour
         {
             isGrounded = false;
         }
+
+        lastGroundCheckHit = groundCheckInfo[0];
     }
 
     void ComputeVelocity()
@@ -179,6 +182,7 @@ public class PlayerController : MonoBehaviour
         currentVelocity += velocity; 
     }
 
+    public RaycastHit GetLastGroundCheckHit() => this.lastGroundCheckHit;
 
     private void OnDrawGizmos()
     {
@@ -192,6 +196,7 @@ public class PlayerController : MonoBehaviour
         Gizmos.color = Color.blueViolet;
         Gizmos.DrawRay(this.transform.position, currentVelocity);
     }
+
 
 
 

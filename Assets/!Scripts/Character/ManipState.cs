@@ -26,7 +26,6 @@ public partial class GravityManipulation
             
             owner.springArm.enabled = true;
             owner.playerController.isPossesed = false;
-
             currentPosition = owner.transform.position;
             currentRotation = owner.transform.rotation;
             targetPosition = owner.targetPosition;
@@ -69,6 +68,6 @@ public partial class GravityManipulation
 [Serializable]
 
 public struct ManipStateData
-{
+{   
     public float manipDuration;
 }

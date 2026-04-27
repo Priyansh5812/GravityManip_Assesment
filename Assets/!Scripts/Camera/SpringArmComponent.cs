@@ -22,6 +22,13 @@ public class SpringArmComponent : MonoBehaviour
     Quaternion rotation;
     float currentXRotation = 0f;
     RaycastHit[] hitsInfo = new RaycastHit[1];
+    bool isActive = true;
+    private void OnEnable()
+    {
+        EventManager.OnGameStarted.AddListener(SetGameStartState);
+        EventManager.OnGameEnded.AddListener(SetGameEndState);
+    }
+
     private void Start()
     {
         Initialize();
@@ -29,14 +36,13 @@ public class SpringArmComponent : MonoBehaviour
 
     void Initialize()
     { 
-        mainCamera ??= Camera.main;
-        Cursor.lockState = CursorLockMode.Locked;   
+        mainCamera ??= Camera.main; 
     }
 
     void AddInput()
-    {
-        xInput = Input.GetAxis("Mouse X");
-        yInput = Input.GetAxis("Mouse Y");
+    {   
+        xInput = isActive ? Input.GetAxis("Mouse X") : 0;
+        yInput = isActive ? Input.GetAxis("Mouse Y") : 0;
         Vector3 rotation = this.transform.localRotation.eulerAngles;
         float xStep = -yInput * XSens * globalSensMultiplier * Time.deltaTime;
         float yStep = xInput * YSens * globalSensMultiplier * Time.deltaTime;
@@ -100,8 +106,23 @@ public class SpringArmComponent : MonoBehaviour
         Debug.DrawLine(origin, position);
     }
 
+    private void OnDisable()
+    {
+        EventManager.OnGameStarted.RemoveListener(SetGameStartState);
+        EventManager.OnGameEnded.RemoveListener(SetGameEndState);
+    }
 
 
+    void SetGameStartState()
+    {   
+        Cursor.lockState = CursorLockMode.Locked;
+        isActive = true;
+    }
+    void SetGameEndState()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        isActive = false;
+    }
 
 
 

@@ -38,6 +38,11 @@ public partial class GravityManipulation : MonoBehaviour
     public Quaternion targetRotation;
 
 
+    void OnEnable()
+    {
+        
+    }
+
     void Start()
     {
         Init();
@@ -118,6 +123,11 @@ public partial class GravityManipulation : MonoBehaviour
         idealPoint += lastGroundHit.normal * ((groundCollider.transform.localScale.y * groundCollider.size.y) / 1.95f);
         idealPoint += lastGroundHit.normal * idealPointDistance;
         return idealPoint;
+    }
+
+    void OnDisable()
+    {
+        
     }
 }
 

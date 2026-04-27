@@ -27,7 +27,11 @@ public class PlayerController : MonoBehaviour
     
     [Header("Ground Probing")]
     [SerializeField] LayerMask groundMask;
-    [SerializeField] bool isGrounded;
+    [field: SerializeField]
+    public bool IsGrounded
+    {
+        get; private set;
+    }
     [SerializeField] float groundCheckOffset = 0.1f;
     [SerializeField] float groundCheckRangeOffset = 0.01f;
     [SerializeField] float groundCheckCapsuleRadiusModifier = 1.0f;
@@ -41,6 +45,12 @@ public class PlayerController : MonoBehaviour
     float currentGravity;
 
     public bool isPossesed = true;
+
+    private void OnEnable()
+    {
+        EventManager.OnGameStarted.AddListener(SetGameStartState);
+        EventManager.OnGameEnded.AddListener(SetGameEndState);
+    }
 
     void ValidateCapsuleBounds()
     { 
@@ -56,6 +66,9 @@ public class PlayerController : MonoBehaviour
         bottomHemisphereCenter = worldCenter + this.transform.rotation * (Vector3.down * ((height / 2) - radius));
         topHemisphereCenter = worldCenter + this.transform.rotation * (Vector3.up * ((height/2)-radius));
     }
+
+
+
 
     void Update()
     {   
@@ -73,7 +86,7 @@ public class PlayerController : MonoBehaviour
     {
         motionVector.x = isPossesed ? Input.GetAxisRaw("Horizontal") : 0;
         motionVector.z = isPossesed ? Input.GetAxisRaw("Vertical") : 0;
-        queueJump = isPossesed ? (isGrounded && Input.GetKeyDown(KeyCode.Space)) : false;
+        queueJump = isPossesed ? (IsGrounded && Input.GetKeyDown(KeyCode.Space)) : false;
         SetJumpState();
         motionVector.Normalize();
     }
@@ -102,12 +115,12 @@ public class PlayerController : MonoBehaviour
             groundCheckOffset + groundCheckRangeOffset,
             groundMask) > 0)
         {
-            isGrounded = true;
+            IsGrounded = true;
             remainingJumpSpeed = 0.0f;
         }
         else 
         {
-            isGrounded = false;
+            IsGrounded = false;
         }
 
         lastGroundCheckHit = groundCheckInfo[0];
@@ -126,7 +139,7 @@ public class PlayerController : MonoBehaviour
 
     void ApplyGravity(ref Vector3 currentVelocity)
     {
-        if (isGrounded)
+        if (IsGrounded)
         {
             currentGravity = 0.0f;
         }
@@ -177,12 +190,23 @@ public class PlayerController : MonoBehaviour
         CalculateBaseMovementSpeed();
         Vector3 velocity = motionVector * currentSpeed ;
         velocity = OrientationReference.rotation * velocity;
-        if(isGrounded)
+        if(IsGrounded)
             velocity = Vector3.ProjectOnPlane(velocity, lastGroundCheckHit.normal); // no slope projection
         currentVelocity += velocity; 
     }
 
+    void SetGameStartState()
+    {   
+        isPossesed = true;
+    }
+    void SetGameEndState()
+    {
+        isPossesed = false;
+    }
+
+
     public RaycastHit GetLastGroundCheckHit() => this.lastGroundCheckHit;
+    public Vector3 GetVelocity() => currentVelocity;
 
     private void OnDrawGizmos()
     {
@@ -198,13 +222,24 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.TryGetComponent<CollectibleIdentifier>(out var comp))
+        {
+            comp.SetAsCollected();
+        }
+    }
 
     private void OnValidate()
     {
         ValidateCapsuleBounds();
     }
 
+    private void OnDisable()
+    {
+        EventManager.OnGameStarted.RemoveListener(SetGameStartState);
+        EventManager.OnGameEnded.RemoveListener(SetGameEndState);
+    }
 
 
 }

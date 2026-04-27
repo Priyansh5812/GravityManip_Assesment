@@ -1,8 +1,10 @@
 using System;
 
+// State interface used by GravityManipulation's simple state machine.
+// Each concrete state must implement lifecycle methods for enter/update/exit
+// and provide a Type property so the machine can determine transitions.
 public partial class GravityManipulation
 {
-    // Base state interface
     private interface IState
     {
         StateType Type { get; }

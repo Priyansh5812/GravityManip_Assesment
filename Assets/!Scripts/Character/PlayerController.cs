@@ -1,5 +1,10 @@
 using UnityEngine;
 
+// PlayerController
+// Responsible for low-level character physics, movement, jumping and ground checks.
+// The controller computes a desired linear velocity and writes it to the Rigidbody
+// each FixedUpdate. It also responds to global game start/end events to enable
+// or disable player input.
 [RequireComponent(typeof(Rigidbody) , typeof(CapsuleCollider))]
 public class PlayerController : MonoBehaviour
 {
@@ -44,6 +49,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float gravityAccumulation;
     float currentGravity;
 
+    // Whether the player currently receives input (controlled externally)
     public bool isPossesed = true;
 
     private void OnEnable()
@@ -67,15 +73,11 @@ public class PlayerController : MonoBehaviour
         topHemisphereCenter = worldCenter + this.transform.rotation * (Vector3.up * ((height/2)-radius));
     }
 
-
-
-
     void Update()
     {   
         ReceiveInput();
     }
     
-
     private void FixedUpdate()
     {
         ComputeGroundCheck();
@@ -96,11 +98,13 @@ public class PlayerController : MonoBehaviour
         if (!queueJump)
             return;
 
+        // Lift the character slightly so the physics will treat it as airborne
         this.transform.position += this.transform.up * (groundCheckOffset + groundCheckRangeOffset + 0.05f);
         remainingJumpSpeed = maxJumpSpeed;
         queueJump = false;
     }
 
+    // Perform a capsule probe to determine grounded state and relevant hit info
     void ComputeGroundCheck()
     {
         Vector3 bottom, top;
@@ -126,6 +130,7 @@ public class PlayerController : MonoBehaviour
         lastGroundCheckHit = groundCheckInfo[0];
     }
 
+    // Compose current velocity from gravity, jump and locomotion and write to rigidbody
     void ComputeVelocity()
     {
         currentVelocity = Vector3.zero;
@@ -134,8 +139,6 @@ public class PlayerController : MonoBehaviour
         ApplyLocomotion(ref currentVelocity);
         rb.linearVelocity = currentVelocity;
     }
-
-    
 
     void ApplyGravity(ref Vector3 currentVelocity)
     {
@@ -159,7 +162,6 @@ public class PlayerController : MonoBehaviour
             remainingJumpSpeed -= Time.fixedDeltaTime;
             remainingJumpSpeed = Mathf.Clamp(remainingJumpSpeed, 0, maxJumpSpeed);
         }
-
     }
 
     void ApplyJumpForces(ref Vector3 currentVelocity)
@@ -171,7 +173,6 @@ public class PlayerController : MonoBehaviour
         remainingJumpSpeed -= JumpSpeedDecrementFactor * Time.fixedDeltaTime;
     }
 
-
     void CalculateBaseMovementSpeed()
     {
         if (motionVector.sqrMagnitude > 0)
@@ -180,8 +181,6 @@ public class PlayerController : MonoBehaviour
             currentSpeed *= deaccelarationConstant * Time.fixedDeltaTime;
 
         currentSpeed = Mathf.Clamp(currentSpeed, 0.0f, maxSpeed);
-
-
         lastSpeed = currentSpeed;
     }
 
@@ -204,7 +203,6 @@ public class PlayerController : MonoBehaviour
         isPossesed = false;
     }
 
-
     public RaycastHit GetLastGroundCheckHit() => this.lastGroundCheckHit;
     public Vector3 GetVelocity() => currentVelocity;
 
@@ -221,7 +219,6 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawRay(this.transform.position, currentVelocity);
     }
 
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent<CollectibleIdentifier>(out var comp))
@@ -230,14 +227,11 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-
         if (other.TryGetComponent<OutOfBounds>(out var comp_1))
         {
             EventManager.OnGameEnded.Invoke();
             return;
         }
-
-
     }
 
     private void OnValidate()
@@ -250,6 +244,4 @@ public class PlayerController : MonoBehaviour
         EventManager.OnGameStarted.RemoveListener(SetGameStartState);
         EventManager.OnGameEnded.RemoveListener(SetGameEndState);
     }
-
-
 }

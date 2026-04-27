@@ -7,6 +7,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+// StatsManager
+// Manages the in-game UI for timer, remaining collectibles and result screen.
+// It listens to game lifecycle events from EventManager and updates UI elements
+// as the player collects cubes or the timer expires.
 public class StatsManager : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI TimerText;
@@ -17,11 +21,14 @@ public class StatsManager : MonoBehaviour
     [SerializeField] int totalMins = 1;
     [SerializeField] int totalSecs = 30;
 
+    // All collectible instances in the scene (assigned in inspector)
     [SerializeField] CollectibleIdentifier[] collectibles;
 
+    // runtime state
     float totalTimeRemaining = 0; // in secs;
     int CubesRemaining = 0;
 
+    // Subscribe to events and button callbacks
     void OnEnable()
     {
         EventManager.OnGameStarted.AddListener(ResetStats);
@@ -34,9 +41,11 @@ public class StatsManager : MonoBehaviour
 
     void Start()
     {   
+        // Start the match timer and broadcast game start
         StartCoroutine(InitiateClock());
     }
 
+    // Timer coroutine: broadcasts start, counts down and then ends game.
     IEnumerator InitiateClock()
     {
         EventManager.OnGameStarted?.Invoke();
@@ -61,6 +70,7 @@ public class StatsManager : MonoBehaviour
         RemainingText?.SetText($"Remaining : {CubesRemaining}/{collectibles.Length}");
     }
 
+    // Decrement count when a collectible is collected
     void UpdateRemainingCollectibles()
     {
         CubesRemaining--;
@@ -72,6 +82,7 @@ public class StatsManager : MonoBehaviour
         ResultText?.SetText($"Cubes Collected : {collectibles.Length - CubesRemaining}");
     }
 
+    // Initialize/reset runtime counters and hide the result UI
     void ResetStats()
     {   
         totalTimeRemaining = totalMins * 60 + totalSecs;
@@ -82,6 +93,7 @@ public class StatsManager : MonoBehaviour
         cgMain.interactable = cgMain.blocksRaycasts = false;
     }
 
+    // Show result UI when the game ends
     void OnGameEnded()
     {
         cgMain.alpha = 1.0f;
@@ -103,7 +115,6 @@ public class StatsManager : MonoBehaviour
 #endif
     }
 
-
     private void OnDisable()
     {
         EventManager.OnGameStarted.RemoveListener(ResetStats);
@@ -114,7 +125,4 @@ public class StatsManager : MonoBehaviour
         btn_restart.onClick.RemoveListener(OnRestart);
         btn_quit.onClick.RemoveListener(OnQuit);
     }
-
-
-
 }

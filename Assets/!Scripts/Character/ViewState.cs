@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
+// ViewState: allows the player to preview valid translation targets by
+// raycasting around an ideal point. The player can select one of the
+// gathered points to set a target for manipulation.
 public partial class GravityManipulation
 {
     private class ViewState : IState
@@ -37,15 +40,14 @@ public partial class GravityManipulation
             }
         }
 
-
         public void OnUpdate()
         {
+            // Poll for directional inputs to move the preview hologram
             PollForTranslation(KeyCode.UpArrow);
             PollForTranslation(KeyCode.DownArrow);
             PollForTranslation(KeyCode.RightArrow);
             PollForTranslation(KeyCode.LeftArrow);
         }
-
 
         public StateType OnTransitionCheck()
         {
@@ -71,6 +73,7 @@ public partial class GravityManipulation
             onCompletion?.Invoke();
         }
 
+        // Smoothly reposition camera back to the spring arm pose
         async Task RepositionCamToSpringArm()
         {
             var pose = owner.springArm.GetComputedPose();
@@ -129,7 +132,6 @@ public partial class GravityManipulation
                 data.playerHolo.gameObject.SetActive(true);
                 data.playerHolo.transform.position = owner.targetPosition = gatheredPoints[key].Item1;
                 data.playerHolo.transform.rotation = owner.targetRotation = Quaternion.LookRotation(gatheredPoints[key].Item2, gatheredPoints[key].Item3);
-
             }
         }
 
@@ -138,8 +140,11 @@ public partial class GravityManipulation
 [Serializable]
 public struct ViewStateData
 {
+    // Hologram used to preview the target position/rotation
     public Transform playerHolo;
+    // Mask used when raycasting ground candidate points
     public LayerMask groundMask;
+    // Duration for camera retargeting when exiting the view state
     public float RetargetDuration;
 }
 

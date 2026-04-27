@@ -2,6 +2,9 @@ using System;
 using System.Threading.Tasks;
 using UnityEngine;
 
+// NoneState: default state when player is in normal control mode.
+// Watches for input to transition into the VIEW state. When exiting this
+// state it retargets the camera smoothly towards the view source transform.
 public partial class GravityManipulation
 {
     private class NoneState : IState
@@ -16,7 +19,7 @@ public partial class GravityManipulation
         }
         public void OnUpdate()
         {
-            //noop
+            // No per-frame behavior in the default state
         }
         public StateType OnTransitionCheck()
         {
@@ -40,6 +43,7 @@ public partial class GravityManipulation
             onCompletion?.Invoke();
         }
 
+        // Smoothly move the main camera to the view source pose
         async Task ReTargetCamera()
         {
             Debug.Log("Retargeting Cam");
@@ -72,5 +76,6 @@ public partial class GravityManipulation
 [Serializable]
 public struct NoneStateData
 {
+    // Duration used when retargeting camera during state exit
     public float RetargetDuration;
 }

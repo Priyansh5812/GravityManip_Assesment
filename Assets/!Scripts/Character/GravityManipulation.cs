@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+// GravityManipulation
+// Top-level component that coordinates the player gravity manipulation feature.
+// It implements a simple state machine (NONE, VIEW, MANIP) and exposes helper
+// methods used by the state implementations. This component also caches
+// references to PlayerController, Camera and SpringArmComponent.
 public partial class GravityManipulation : MonoBehaviour
 {
     [field: SerializeField]
@@ -34,13 +39,12 @@ public partial class GravityManipulation : MonoBehaviour
     }
 
     bool enableUpdationCheck = true;
+    // Target position and rotation used by MANIP state
     public Vector3 targetPosition;
     public Quaternion targetRotation;
 
-
     void OnEnable()
     {
-        
     }
 
     void Start()
@@ -88,7 +92,6 @@ public partial class GravityManipulation : MonoBehaviour
 
         stateCache.TryGetValue(stateType, out var cached);
         return cached;
-
     }
 
     private void SetState(StateType next)
@@ -115,6 +118,7 @@ public partial class GravityManipulation : MonoBehaviour
         }
     }
 
+    // Compute an ideal casting point for the view selection logic.
     public Vector3 GetIdealCastPoint()
     {
         RaycastHit lastGroundHit = playerController.GetLastGroundCheckHit();
@@ -127,7 +131,6 @@ public partial class GravityManipulation : MonoBehaviour
 
     void OnDisable()
     {
-        
     }
 }
 

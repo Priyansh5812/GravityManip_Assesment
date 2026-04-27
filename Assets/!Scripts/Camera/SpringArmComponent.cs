@@ -1,5 +1,9 @@
 using UnityEngine;
 
+// SpringArmComponent
+// Provides a 3rd-person camera pose with collision handling (spherecast)
+// and mouse-driven rotation. The component computes the camera position and
+// rotation each frame and applies it to the main camera.
 public class SpringArmComponent : MonoBehaviour
 {
     Camera mainCamera;

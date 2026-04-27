@@ -58,6 +58,11 @@ public class PlayerController : MonoBehaviour
         EventManager.OnGameEnded.AddListener(SetGameEndState);
     }
 
+    private void Start()
+    {
+        ValidateCapsuleBounds();
+    }
+
     void ValidateCapsuleBounds()
     { 
         rb ??= this.GetComponent<Rigidbody>();

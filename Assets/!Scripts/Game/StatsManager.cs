@@ -1,6 +1,10 @@
 using System.Collections;
 using TMPro;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class StatsManager : MonoBehaviour
@@ -21,7 +25,11 @@ public class StatsManager : MonoBehaviour
     void OnEnable()
     {
         EventManager.OnGameStarted.AddListener(ResetStats);
+        EventManager.OnGameEnded.AddListener(OnGameEnded);
         EventManager.OnCubeCollected.AddListener(UpdateRemainingCollectibles);
+
+        btn_restart.onClick.AddListener(OnRestart);
+        btn_quit.onClick.AddListener(OnQuit);
     }
 
     void Start()
@@ -59,18 +67,52 @@ public class StatsManager : MonoBehaviour
         UpdateRemainingCollectiblesView();
     }
 
-    void ResetStats()
+    void UpdateResult()
     {
+        ResultText?.SetText($"Cubes Collected : {collectibles.Length - CubesRemaining}");
+    }
+
+    void ResetStats()
+    {   
         totalTimeRemaining = totalMins * 60 + totalSecs;
         CubesRemaining = collectibles.Length;
         UpdateTimerView();
         UpdateRemainingCollectiblesView();
+        cgMain.alpha = 0.0f;
+        cgMain.interactable = cgMain.blocksRaycasts = false;
     }
+
+    void OnGameEnded()
+    {
+        cgMain.alpha = 1.0f;
+        cgMain.interactable = cgMain.blocksRaycasts = true;
+        UpdateResult();
+    }
+
+    void OnRestart()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    void OnQuit()
+    {
+#if !UNITY_EDITOR
+    Application.Quit();
+#else
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
+
 
     private void OnDisable()
     {
         EventManager.OnGameStarted.RemoveListener(ResetStats);
+        EventManager.OnGameEnded.RemoveListener(OnGameEnded);
         EventManager.OnCubeCollected.RemoveListener(UpdateRemainingCollectibles);
+
+
+        btn_restart.onClick.RemoveListener(OnRestart);
+        btn_quit.onClick.RemoveListener(OnQuit);
     }
 
 

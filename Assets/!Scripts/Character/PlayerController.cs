@@ -227,7 +227,17 @@ public class PlayerController : MonoBehaviour
         if (other.TryGetComponent<CollectibleIdentifier>(out var comp))
         {
             comp.SetAsCollected();
+            return;
         }
+
+
+        if (other.TryGetComponent<OutOfBounds>(out var comp_1))
+        {
+            EventManager.OnGameEnded.Invoke();
+            return;
+        }
+
+
     }
 
     private void OnValidate()
